@@ -37,7 +37,7 @@ export default function ScheduleEventPage() {
     const [importance, setImportance] = useState("HIGH");
 
     const options = [
-        { value: 'CRITICAL', label: 'Critical', color: '#ffb4ab' },
+        { value: 'CRITICAL', label: 'Critical', color: '#f8a9a0' },
         { value: 'HIGH', label: 'High', color: '#adc6ff' },
         { value: 'MEDIUM', label: 'Medium', color: '#4edea3' },
         { value: 'LOW', label: 'Low', color: '#c2c6d6' },

@@ -1,33 +1,34 @@
 import React from 'react';
 
 interface ButtonImportanceLevelProps {
-    opt: Record<string, string>;
-    importance: string,
+    // Highly recommended to type this strictly instead of Record<string, string>
+    opt: { value: string; label: string; color: string };
+    importance: string;
     onChange: React.ChangeEventHandler<HTMLInputElement>;
 }
 
-const ButtonImportanceLevel = ({opt, importance, onChange}: ButtonImportanceLevelProps) => {
+const ButtonImportanceLevel = ({ opt, importance, onChange }: ButtonImportanceLevelProps) => {
     const isChecked = importance === opt.value;
-                                        
-    // Dynamic style strings tailored to your custom colors
-    const activeClass = `bg-[${opt.color}]/10 border-[${opt.color}] text-[${opt.color}]`;
-    const inactiveClass = `border-[#424754]/50 text-[${opt.color}] hover:bg-[${opt.color}]/5`;
 
+    // We use standard Tailwind for structure, but handle the custom colors via inline styles
     return (
         <label 
-        key={opt.value}
-        className={`flex-1 flex items-center justify-center rounded border text-xs font-bold py-2 transition-colors uppercase cursor-pointer select-none ${
-            isChecked ? activeClass : inactiveClass
-        }`}
+            className={`flex-1 flex items-center justify-center rounded border text-xs font-bold py-2 transition-colors uppercase cursor-pointer select-none`}
+            style={{
+                // Active state uses the custom color for border, text, and an alpha-adjusted background
+                // Inactive state uses a default dark border, but still styles the text color
+                borderColor: isChecked ? opt.color : '#42475480', // #424754/50 in hex format
+                color: opt.color,
+                backgroundColor: isChecked ? `${opt.color}1a` : 'transparent', // 1a adds ~10% opacity in hex
+            }}
         >
-            {/* Visually hidden radio input for accessibility */}
             <input
                 type="radio"
                 name="importanceLevel"
                 value={opt.value}
                 checked={isChecked}
                 onChange={onChange}
-                className="sr-only" // Tailwind class to hide visually but keep accessible
+                className="sr-only" 
             />
             {opt.label}
         </label>
