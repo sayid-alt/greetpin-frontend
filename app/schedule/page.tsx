@@ -27,8 +27,8 @@ interface EntityDetail {
 }
 
 interface EventFormData {
+    [key: string]: unknown; // Allows other form fields
     relatedEntities?: EntityDetail[];
-    [key: string]: any; // Allows other form fields
 }
 
 export default function ScheduleEventPage() {
@@ -73,11 +73,14 @@ export default function ScheduleEventPage() {
     const entityNameRef = useRef<HTMLInputElement>(null)
     const entityTypeRef = useRef<HTMLSelectElement>(null)
 
-    const handleInputEntity = (event?: React.KeyboardEvent<any>) => {
+    const handleInputEntity = () => {
         const entityNameValue = entityNameRef.current?.value
         const entityTypeValue = entityTypeRef.current?.value
 
-        const inputEntity = {name: entityNameValue as string, entityType: entityTypeValue?.toUpperCase() as string}
+        const inputEntity = {
+            name: entityNameValue as string, 
+            entityType: entityTypeValue?.toUpperCase() as string
+        }
 
         if (entityNameValue || entityTypeValue) {
             const isDuplicate = tags.some(
@@ -290,7 +293,7 @@ export default function ScheduleEventPage() {
                                     onKeyDown={(event) => {
                                         if (event.key === "Enter") {
                                             event.preventDefault();
-                                            handleInputEntity(event);
+                                            handleInputEntity();
                                         }
                                     }}
                                 />

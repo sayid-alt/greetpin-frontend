@@ -1,26 +1,164 @@
+/* 1. External Font Imports MUST go at the absolute top */
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap');
+
+/* 2. Tailwind v4 core import */
 @import "tailwindcss";
 
+/* 3. Global CSS Variable Definitions */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0c1322;
+  --foreground: #dce2f7;
+  
+  /* Your custom colors mapped to variables */
+  --color-error: #ffb4ab;
+  --color-secondary-fixed-dim: #4edea3;
+  --color-tertiary-container: #df7412;
+  --color-on-surface: #dce2f7;
+  --color-on-primary-container: #00285d;
+  --color-surface-container-highest: #2e3545;
+  --color-surface-container: #191f2f;
+  --color-secondary: #4edea3;
+  --color-on-error: #690005;
+  --color-tertiary-fixed-dim: #ffb786;
+  --color-primary-container: #4d8eff;
+  --color-primary-fixed: #d8e2ff;
+  --color-on-background: #dce2f7;
+  --color-tertiary: #ffb786;
+  --color-error-container: #93000a;
+  --color-tertiary-fixed: #ffdcc6;
+  --color-on-tertiary-fixed: #311400;
+  --color-inverse-on-surface: #293040;
+  --color-on-surface-variant: #c2c6d6;
+  --color-surface-container-high: #232a3a;
+  --color-on-tertiary-fixed-variant: #723600;
+  --color-on-secondary-container: #00311f;
+  --color-outline-variant: #424754;
+  --color-on-tertiary: #502400;
+  --color-surface-dim: #0c1322;
+  --color-surface-tint: #adc6ff;
+  --color-inverse-primary: #005ac2;
+  --color-secondary-container: #00a572;
+  --color-outline: #8c909f;
+  --color-on-secondary: #003824;
+  --color-on-primary-fixed-variant: #004395;
+  --color-on-primary: #002e6a;
+  --color-on-secondary-fixed: #002113;
+  --color-primary-fixed-dim: #adc6ff;
+  --color-on-error-container: #ffdad6;
+  --color-inverse-surface: #dce2f7;
+  --color-surface: #0c1322;
+  --color-primary: #adc6ff;
+  --color-on-tertiary-container: #461f00;
+  --color-on-secondary-fixed-variant: #005236;
+  --color-secondary-fixed: #6ffbbe;
+  --color-on-primary-fixed: #001a42;
+  --color-surface-variant: #2e3545;
+  --color-surface-container-low: #141b2b;
+  --color-surface-bright: #323949;
+  --color-surface-container-lowest: #070e1d;
+
+  /* Spacing */
+  --spacing-sm: 8px;
+  --spacing-gutter: 16px;
+  --spacing-xl: 48px;
+  --spacing-margin-desktop: 32px;
+  --spacing-lg: 24px;
+  --spacing-xs: 4px;
+  --spacing-margin-mobile: 16px;
+  --spacing-base: 4px;
+  --spacing-md: 16px;
 }
 
+/* 4. Tailwind v4 Theme Configuration */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: 'Hanken Grotesk', sans-serif;
+
+  /* Expose custom colors explicitly to Tailwind v4 */
+  --color-error: var(--color-error);
+  --color-secondary-fixed-dim: var(--color-secondary-fixed-dim);
+  --color-tertiary-container: var(--color-tertiary-container);
+  --color-on-surface: var(--color-on-surface);
+  --color-on-primary-container: var(--color-on-primary-container);
+  --color-surface-container-highest: var(--color-surface-container-highest);
+  --color-surface-container: var(--color-surface-container);
+  --color-secondary: var(--color-secondary);
+  --color-on-error: var(--color-on-error);
+  --color-tertiary-fixed-dim: var(--color-tertiary-fixed-dim);
+  --color-primary-container: var(--color-primary-container);
+  --color-primary-fixed: var(--color-primary-fixed);
+  --color-on-background: var(--color-on-background);
+  --color-tertiary: var(--color-tertiary);
+  --color-error-container: var(--color-error-container);
+  --color-tertiary-fixed: var(--color-tertiary-fixed);
+  --color-on-tertiary-fixed: var(--color-on-tertiary-fixed);
+  --color-inverse-on-surface: var(--color-inverse-on-surface);
+  --color-on-surface-variant: var(--color-on-surface-variant);
+  --color-surface-container-high: var(--color-surface-container-high);
+  --color-on-tertiary-fixed-variant: var(--color-on-tertiary-fixed-variant);
+  --color-on-secondary-container: var(--color-on-secondary-container);
+  --color-outline-variant: var(--color-outline-variant);
+  --color-on-tertiary: var(--color-on-tertiary);
+  --color-surface-dim: var(--color-surface-dim);
+  --color-surface-tint: var(--color-surface-tint);
+  --color-inverse-primary: var(--color-inverse-primary);
+  --color-secondary-container: var(--color-secondary-container);
+  --color-outline: var(--color-outline);
+  --color-on-secondary: var(--color-on-secondary);
+  --color-on-primary-fixed-variant: var(--color-on-primary-fixed-variant);
+  --color-on-primary: var(--color-on-primary);
+  --color-on-secondary-fixed: var(--color-on-secondary-fixed);
+  --color-primary-fixed-dim: var(--color-primary-fixed-dim);
+  --color-on-error-container: var(--color-on-error-container);
+  --color-inverse-surface: var(--color-inverse-surface);
+  --color-surface: var(--color-surface);
+  --color-primary: var(--color-primary);
+  --color-on-tertiary-container: var(--color-on-tertiary-container);
+  --color-on-secondary-fixed-variant: var(--color-on-secondary-fixed-variant);
+  --color-secondary-fixed: var(--color-secondary-fixed);
+  --color-on-primary-fixed: var(--color-on-primary-fixed);
+  --color-surface-variant: var(--color-surface-variant);
+  --color-surface-container-low: var(--color-surface-container-low);
+  --color-surface-bright: var(--color-surface-bright);
+  --color-surface-container-lowest: var(--color-surface-container-lowest);
+
+  /* Expose custom border-radii */
+  --radius-lg: 0.25rem;
+  --radius-xl: 0.5rem;
+  --radius-full: 0.75rem;
+  
+  /* Expose custom spacings */
+  --spacing-sm: var(--spacing-sm);
+  --spacing-gutter: var(--spacing-gutter);
+  --spacing-xl: var(--spacing-xl);
+  --spacing-margin-desktop: var(--spacing-margin-desktop);
+  --spacing-lg: var(--spacing-lg);
+  --spacing-xs: var(--spacing-xs);
+  --spacing-margin-mobile: var(--spacing-margin-mobile);
+  --spacing-base: var(--spacing-base);
+  --spacing-md: var(--spacing-md);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* 5. Custom Functional Rules */
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: 'Hanken Grotesk', sans-serif;
 }
+
+.material-symbols-outlined {
+  font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+}
+
+input:focus {
+  outline: none;
+  box-shadow: none;
+}
+
+/* .bento-glass {
+  background: rgba(25, 31, 47, 0.7);
+  backdrop-filter: blur(12px);
+  border: 1px solid #424754;
+} */
