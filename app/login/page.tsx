@@ -8,6 +8,7 @@ import { Calendar1Icon, Lock, PersonStanding } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 export default function LoginPage() {
+    
     const [isFocused, setIsFocused] = useState(false);
 
     const router = useRouter();
@@ -37,6 +38,7 @@ export default function LoginPage() {
         
         } catch (error) {
             setError("Something wrong, try again!")
+            console.log(error); // Temporary
         } finally {
             setLoading(false);
         }
@@ -170,8 +172,8 @@ export default function LoginPage() {
                 {/* Footer Link */}
                 <div className="mt-[16px] text-center flex justify-center">
                     <p className="text-[16px] leading-[24px] font-normal text-on-surface-variant">
-                        Don't have an account?{" "}
-                        <Link className="text-primary font-bold hover:underline ml-[4px]" href="#">
+                        Don{"'"}t have an account?{" "}
+                        <Link className="text-primary font-bold hover:underline ml-[4px]" href="/signup">
                             Sign up
                         </Link>
                     </p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { 
     Bell, 
@@ -20,6 +20,9 @@ import {
 } from "lucide-react";
 import ButtonImportanceLevel from "./ButtonImportanceLevel";
 import TagChip from "./TagChip";
+import { auth } from "@/lib/auth";
+import { signOut, useSession } from "next-auth/react";
+import AuthExpiryWatchers from "../components/AuthExpiryWatchers";
 
 interface EntityDetail {
     name: string,
@@ -32,7 +35,13 @@ interface EventFormData {
 }
 
 export default function ScheduleEventPage() {
-    
+    // user session
+    const { data: session, status} = useSession();
+    const token = session?.accessToken;
+    console.log(session);
+    console.log(token);
+    console.log(status);
+
     // State for Importance level toggle selection
     const [importance, setImportance] = useState("HIGH");
 
@@ -114,7 +123,7 @@ export default function ScheduleEventPage() {
             body: JSON.stringify(dataInput),
             headers: {
                 'Content-Type': "application/json",
-                'Authorization': "Bearer eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJkYW5pZWwiLCJpYXQiOjE3ODI4MjQwMDMsImV4cCI6MTc4MjkxMDQwM30.8_mkH3eI5KM4EoHu2soROHVGPNLxVid41DnJ9BikHm1OcXdQV4z8WAPu67HIZkNJi4lpW17UlwK8F6_KmnaZAg"
+                'Authorization': `Bearer ${token}`
             }
         })
 
