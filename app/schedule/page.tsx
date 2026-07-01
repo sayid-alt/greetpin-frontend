@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { 
     Bell, 
@@ -20,9 +20,8 @@ import {
 } from "lucide-react";
 import ButtonImportanceLevel from "./ButtonImportanceLevel";
 import TagChip from "./TagChip";
-import { auth } from "@/lib/auth";
-import { signOut, useSession } from "next-auth/react";
-import AuthExpiryWatchers from "../components/AuthExpiryWatchers";
+import { useSession } from "next-auth/react";
+import FloatingAlert, {AlertType} from "../components/FloatingAlert";
 
 interface EntityDetail {
     name: string,
@@ -34,17 +33,24 @@ interface EventFormData {
     relatedEntities?: EntityDetail[];
 }
 
+type SiteCategory = 'ONLINE' | 'ONSITE';
+
 export default function ScheduleEventPage() {
     // user session
     const { data: session, status} = useSession();
     const token = session?.accessToken;
-    console.log(session);
-    console.log(token);
-    console.log(status);
+    
+    // Forn field states
+    const [title, setTitle] = useState<string>("New Event");
+    const [startDateTime, setStartDateTime] = useState<string>("");
+    const [endDateTime, setEndDateTime] = useState<string>("");
+    const [siteCategory, setSiteCategory] = useState<SiteCategory>("ONLINE");
+    const [importance, setImportance] = useState("HIGH");
+    const [url, setUrl] = useState<string>("");
+    const [tags, setTags] = useState<EntityDetail[]>([]);
+    const [description, setDescription] = useState<string>("");
 
     // State for Importance level toggle selection
-    const [importance, setImportance] = useState("HIGH");
-
     const options = [
         { value: 'CRITICAL', label: 'Critical', color: '#f8a9a0' },
         { value: 'HIGH', label: 'High', color: '#adc6ff' },
@@ -53,11 +59,6 @@ export default function ScheduleEventPage() {
     ];
     
     // State for interactive tag removal
-    const [tags, setTags] = useState<EntityDetail[]>([{
-        "name": "Monica",
-        "entityType": "PERSON"
-    }]);
-    
     const removetag = (tagToRemove: EntityDetail) => {
         setTags(tags.filter(
             tag => tag.name.toLowerCase() !== tagToRemove.name.toLowerCase() || 
@@ -72,9 +73,7 @@ export default function ScheduleEventPage() {
     ) => {
         event.preventDefault();
         event.stopPropagation();
-
         removetag({name: name as string, entityType: type as string})
-
     }
 
     // Entity relation input hanlder
@@ -106,8 +105,14 @@ export default function ScheduleEventPage() {
     }
 
     // handling submit the form
+    const [showAlert, setShowAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState<string>("");
+    const [alertTitle, setAlertTitle] = useState<string>("");
+    const [alertType, setAlertType] = useState<AlertType>("info");
+
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
+
         const formData = new FormData(event.currentTarget)
         const dataInput = Object.fromEntries(formData) as EventFormData;
 
@@ -115,7 +120,8 @@ export default function ScheduleEventPage() {
         dataInput.relatedEntities = [tags[0]];
         dataInput.startDateTime = `${dataInput.startDateTime}:00+07:00`;
         dataInput.endDateTime = `${dataInput.endDateTime}:00+07:00`;
-        
+
+        // DEBUGGING
         console.log(dataInput)
 
         const response = await fetch("http://localhost:8080/api/events/create", {
@@ -127,20 +133,54 @@ export default function ScheduleEventPage() {
             }
         })
 
-        if (!response.ok) {
-            throw new Error(`Server error: ${response.status}`);
-        }
-
         let data = null;
         if (response.status !== 204) {
             const text = await response.text(); // Get raw text first
             data = text ? JSON.parse(text) : null; // Only parse if text isn't empty
         }
+
+        if (!response.ok) {
+            setShowAlert(true)
+            setAlertType("error");
+            setAlertTitle(data.message);
+            setAlertMessage(data.data);
+            // throw new Error(`Server error: ${response.status}`);
+        }
+        
+        if (response.status == 201) {
+            const text = await response.text(); // Get raw text first
+            data = text ? JSON.parse(text) : null;
+
+            setShowAlert(true)
+            setAlertType("success");
+            setAlertTitle(data.message);
+            setAlertMessage(data.data)
+        }
+
+        setTitle("New Event");
+        setStartDateTime("");
+        setEndDateTime("");
+        setSiteCategory("ONLINE");
+        setUrl("");
+        setTags([]);
+        setDescription("");
+
         console.log(data)
     }
 
     return (
-        <div className="flex-1 min-h-screen flex flex-col bg-[#0c1322]">
+    <div className="flex-1 min-h-screen flex flex-col bg-[#0c1322]">
+        {
+            showAlert && (
+                <FloatingAlert
+                    type={alertType}
+                    title={alertTitle}
+                    message={alertMessage}
+                    duration={5000}
+                    onClose={() => setShowAlert(false)}
+                />
+            )
+        }
         {/* TopAppBar Header */}
         <header className="h-16 flex justify-between items-center px-8 w-full bg-[#0c1322] border-b border-[#424754]/50 sticky top-0 z-40">
             <div className="flex items-center gap-6">
@@ -166,8 +206,8 @@ export default function ScheduleEventPage() {
         </header>
 
         {/* Canvas / Form Body Container */}
-    <main className="flex-1 overflow-y-auto p-8 bg-[#0c1322] relative">
-        <div className="max-w-4xl mx-auto space-y-6 pb-12">
+        <main className="flex-1 overflow-y-auto p-8 bg-[#0c1322] relative">
+            <div className="max-w-4xl mx-auto space-y-6 pb-12">
 
             {/* Core Interactive Card Structure */}
             <div className="bg-[#141b2b] border border-[#424754]/50 rounded-xl p-6 shadow-sm">
@@ -182,7 +222,8 @@ export default function ScheduleEventPage() {
                                 className="w-full bg-[#0c1322] text-2xl font-semibold text-[#dce2f7] border border-[#424754]/50 px-4 py-2 rounded focus:outline-none focus:border-[#adc6ff] focus:ring-1 focus:ring-[#adc6ff] transition-all placeholder:opacity-30" 
                                 placeholder="Strategy Planning Q4..." 
                                 type="text"
-                                defaultValue={"New Event"}
+                                value={title}
+                                onChange={(e) => setTitle(e.target.value)}
                                 name="title"
                             />
                         </div>
@@ -190,16 +231,18 @@ export default function ScheduleEventPage() {
                         {/* Date and Time Range Block */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-1">
-                            <label className="text-xs font-semibold text-[#c2c6d6] tracking-wider">START DATE & TIME</label>
-                            <div className="flex bg-[#0c1322] border border-[#424754]/50 rounded p-1 items-center focus-within:border-[#adc6ff] focus-within:ring-1 focus-within:ring-[#adc6ff] transition-all">
-                                <Calendar className="mx-3 text-[#c2c6d6]" size={18} />
-                                <input 
-                                    className="bg-transparent border-none text-[#dce2f7] focus:ring-0 text-sm w-full py-1.5" 
-                                    type="datetime-local" 
-                                    name="startDateTime"
-                                    required
-                                />
-                            </div>
+                                <label className="text-xs font-semibold text-[#c2c6d6] tracking-wider">START DATE & TIME</label>
+                                <div className="flex bg-[#0c1322] border border-[#424754]/50 rounded p-1 items-center focus-within:border-[#adc6ff] focus-within:ring-1 focus-within:ring-[#adc6ff] transition-all">
+                                    <Calendar className="mx-3 text-[#c2c6d6]" size={18} />
+                                    <input 
+                                        className="bg-transparent border-none text-[#dce2f7] focus:ring-0 text-sm w-full py-1.5" 
+                                        type="datetime-local" 
+                                        name="startDateTime"
+                                        value={startDateTime}
+                                        onChange={(e) => setStartDateTime(e.target.value)}
+                                        required
+                                    />
+                                </div>
                             </div>
                             <div className="space-y-1">
                             <label className="text-xs font-semibold text-[#c2c6d6] tracking-wider">END DATE & TIME</label>
@@ -209,6 +252,8 @@ export default function ScheduleEventPage() {
                                     className="bg-transparent border-none text-[#dce2f7] focus:ring-0 text-sm w-full py-1.5" 
                                     type="datetime-local"
                                     name="endDateTime" 
+                                    value={endDateTime}
+                                    onChange={(e) => setEndDateTime(e.target.value)}
                                     required
                                 />
                             </div>
@@ -223,6 +268,8 @@ export default function ScheduleEventPage() {
                                 <select 
                                     className="w-full bg-[#0c1322] border border-[#424754]/50 px-4 py-3.5 rounded appearance-none text-sm text-[#dce2f7] focus:outline-none focus:border-[#adc6ff] focus:ring-1 focus:ring-[#adc6ff] transition-all"
                                     name="siteCategory"
+                                    // value={siteCategory}
+                                    // onChange={(e) => setSiteCategory(e.target.value)}
                                 >
                                     <option>ONLINE</option>
                                     <option>ONSITE</option>
@@ -262,6 +309,8 @@ export default function ScheduleEventPage() {
                                     placeholder="Global Innovation Center, Room 402" 
                                     type="text"
                                     name="url"
+                                    value={url}
+                                    onChange={(e) => setUrl(e.target.value)}
                                 />
                             </div>
                         </div>
@@ -344,6 +393,8 @@ export default function ScheduleEventPage() {
                                 placeholder="Define goals, agenda, and pre-requisites here..." 
                                 rows={6}
                                 name="description"
+                                value={description}
+                                onChange={(e) => setDescription(e.target.value)}
                             >
                             </textarea>
                             </div>
@@ -375,6 +426,6 @@ export default function ScheduleEventPage() {
             <div className="absolute top-0 right-0 -z-10 w-96 h-96 bg-[#adc6ff]/5 blur-[120px] rounded-full pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 -z-10 w-64 h-64 bg-[#4edea3]/5 blur-[100px] rounded-full pointer-events-none"></div>
         </main>
-        </div>
+    </div>
     );
 }
