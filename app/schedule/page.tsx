@@ -134,19 +134,6 @@ export default function ScheduleEventPage() {
         })
 
         let data = null;
-        if (response.status !== 204) {
-            const text = await response.text(); // Get raw text first
-            data = text ? JSON.parse(text) : null; // Only parse if text isn't empty
-        }
-
-        if (!response.ok) {
-            setShowAlert(true)
-            setAlertType("error");
-            setAlertTitle(data.message);
-            setAlertMessage(data.data);
-            // throw new Error(`Server error: ${response.status}`);
-        }
-        
         if (response.status == 201) {
             const text = await response.text(); // Get raw text first
             data = text ? JSON.parse(text) : null;
@@ -157,6 +144,15 @@ export default function ScheduleEventPage() {
             setAlertMessage(data.data)
         }
 
+        if (!response.ok) {
+            setShowAlert(true)
+            setAlertType("error");
+            setAlertTitle(data.message);
+            setAlertMessage(data.data);
+            // throw new Error(`Server error: ${response.status}`);
+        }
+
+        // Set all field to default value
         setTitle("New Event");
         setStartDateTime("");
         setEndDateTime("");

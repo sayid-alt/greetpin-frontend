@@ -49,16 +49,16 @@ export const {handlers , auth, signIn, signOut} = NextAuth({
                 if (token.expiresAtTime) {
                     const now = Date.now();
                     const tokenExpiryTime = new Date(token.expiresAtTime as string).getTime();
-                    console.log("now: ", now)
-                    console.log("token expires: ", tokenExpiryTime)
+                    // console.log("now: ", now)
+                    // console.log("token expires: ", tokenExpiryTime)
                     if (now >= tokenExpiryTime) {
-                        console.log("Token officially expired");
+                        // console.log("Token officially expired");
                         // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         return null as any;
                     }
                 }
             }
-            console.log(session);
+            // console.log(session);
             // console.log("FINAL SESSION OBJECT:", session);
             return session;
         }

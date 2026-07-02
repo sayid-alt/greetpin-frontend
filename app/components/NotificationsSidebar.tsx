@@ -42,7 +42,7 @@ export default function NotificationsSidebar() {
           </div>
           <div>
             <p className="text-sm font-semibold">Conflict Detected</p>
-            <p className="text-xs text-[#c2c6d6]">1h ago • "Design Review" overlaps with "Standup"</p>
+            <p className="text-xs text-[#c2c6d6]">1h ago • {'"'}Design Review{'"'} overlaps with {'"'}Standup{'"'}</p>
           </div>
         </div>
 
