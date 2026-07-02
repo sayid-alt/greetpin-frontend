@@ -1,10 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Search, Bell, History, Star } from "lucide-react";
+import moment from "moment";
 
 export default function Header() {
   const [isFocused, setIsFocused] = useState(false);
+
+  const [time, setTime] = useState(moment().format('LLLL'));
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTime(moment().format("LLLL"))
+    }, 1000)
+
+    return () => clearInterval(interval);
+  }, []);
 
   return (
     <header className="h-16 flex justify-between items-center px-8 bg-[#0c1322] border-b border-[#424754]/50 sticky top-0 z-40">
@@ -20,6 +31,8 @@ export default function Header() {
           />
         </div>
       </div>
+
+      <div>{time}</div>
 
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-4">

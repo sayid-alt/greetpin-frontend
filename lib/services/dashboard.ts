@@ -1,7 +1,13 @@
 import { auth } from "../auth"
 
+interface ApiResponse {
+    success: boolean;
+    message: string;
+    data: Record<string, string | number>[];
+    timestamp: string;
+}
 
-export async function eventService (endpoint: string) {
+export async function getEvents (endpoint: string) : Promise<ApiResponse | null> {
     const session = await auth();
     const token = session?.accessToken;
 
@@ -12,6 +18,12 @@ export async function eventService (endpoint: string) {
             "Authorization": `Bearer ${token}`
         }
     })
+
+    // Conditional when no upcoming
+    if (response.status == 204) {
+        return null
+    }
+
     const data = response.json();
     return data;
 }

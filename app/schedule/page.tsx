@@ -35,6 +35,7 @@ interface EventFormData {
 
 type SiteCategory = 'ONLINE' | 'ONSITE';
 
+
 export default function ScheduleEventPage() {
     // user session
     const { data: session, status} = useSession();
@@ -50,14 +51,15 @@ export default function ScheduleEventPage() {
     const [tags, setTags] = useState<EntityDetail[]>([]);
     const [description, setDescription] = useState<string>("");
 
-    // State for Importance level toggle selection
-    const options = [
+
+    const levelOptionTags = [
         { value: 'CRITICAL', label: 'Critical', color: '#f8a9a0' },
         { value: 'HIGH', label: 'High', color: '#adc6ff' },
         { value: 'MEDIUM', label: 'Medium', color: '#4edea3' },
         { value: 'LOW', label: 'Low', color: '#c2c6d6' },
     ];
-    
+
+
     // State for interactive tag removal
     const removetag = (tagToRemove: EntityDetail) => {
         setTags(tags.filter(
@@ -115,14 +117,15 @@ export default function ScheduleEventPage() {
 
         const formData = new FormData(event.currentTarget)
         const dataInput = Object.fromEntries(formData) as EventFormData;
+        console.log("title: ", dataInput.title)
 
-        dataInput.title = dataInput.input === undefined  ? "New Event" : dataInput.input
+        dataInput.title = dataInput.title == "" ? "New Event" : dataInput.title
         dataInput.relatedEntities = [tags[0]];
         dataInput.startDateTime = `${dataInput.startDateTime}:00+07:00`;
         dataInput.endDateTime = `${dataInput.endDateTime}:00+07:00`;
 
         // DEBUGGING
-        console.log(dataInput)
+        console.log("data input", dataInput)
 
         const response = await fetch("http://localhost:8080/api/events/create", {
             method: "POST",
@@ -134,10 +137,9 @@ export default function ScheduleEventPage() {
         })
 
         let data = null;
+        const text = await response.text(); // Get raw text first
+        data = text ? JSON.parse(text) : null;
         if (response.status == 201) {
-            const text = await response.text(); // Get raw text first
-            data = text ? JSON.parse(text) : null;
-
             setShowAlert(true)
             setAlertType("success");
             setAlertTitle(data.message);
@@ -161,7 +163,7 @@ export default function ScheduleEventPage() {
         setTags([]);
         setDescription("");
 
-        console.log(data)
+        // console.log(data)
     }
 
     return (
@@ -278,7 +280,7 @@ export default function ScheduleEventPage() {
                                 IMPORTANCE LEVEL
                             </span>
                             <div className="flex gap-2 h-[48px]" role="radiogroup" aria-label="Importance Level">
-                                {options.map((opt) => {
+                                {levelOptionTags.map((opt) => {
                                     return (<ButtonImportanceLevel 
                                         key={opt.value}
                                         opt={opt} 
