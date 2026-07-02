@@ -1,10 +1,10 @@
 import Sidebar from "./components/Sidebar";
 import Header from "./components/Header";
-import CurrentEventCard from "./components/CurrentEventCard";
+import CurrentEventCard from "./components/ongoing-events/CurrentEventCard";
 import NotificationsSidebar from "./components/NotificationsSidebar";
 import UpcomingEvents from "./components/upcoming-events/UpcomingEvents";
 import FloatingActionButton from "./components/FloatingActionButton";
-import NoOngoingEventCard from "./components/NoOngoingEventCard";
+import NoOngoingEventCard from "./components/ongoing-events/NoOngoingEventCard";
 // import NoMetricsGrid from "./components/NoMetricsGrid";
 import NoUpcomingEvents from "./components/upcoming-events/NoUpcomingEvents";
 import NoNotificationsSidebar from "./components/NoNotificationSidebar";
@@ -12,11 +12,13 @@ import NoNotificationsSidebar from "./components/NoNotificationSidebar";
 import { getEvents } from "@/lib/services/dashboard";
 import { EmptyNextEventCard, NextEventCard } from "./components/metrics-grid/NextEventCard";
 import { EmptyNextImportantCard, NextImportantCard } from "./components/metrics-grid/NextImportantCard";
+import OngoingEventSection from "./components/ongoing-events/OngoingEventSection";
 
 
 export default async function Dashboard() {
   const upcomingEventsResponse = await getEvents('/upcoming');
-  console.log('original',upcomingEventsResponse);
+  const ongoingEventsResponse = await getEvents("/ongoing");
+  console.log("ongoing original: ", ongoingEventsResponse);
   return (
     <>
       <Sidebar />
@@ -27,8 +29,11 @@ export default async function Dashboard() {
           {/* Main Column Left */}
           <div className="col-span-12 lg:col-span-8 space-y-6">
             {/* Ongoing Banner */}
-            {/* <CurrentEventCard /> */}
-            <NoOngoingEventCard />
+            {
+              ongoingEventsResponse == null ?
+                <NoOngoingEventCard />:
+                <OngoingEventSection response={ongoingEventsResponse} />
+            }
 
             {/* Metric grid section */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

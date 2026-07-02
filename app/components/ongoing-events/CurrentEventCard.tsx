@@ -1,6 +1,12 @@
-import { MapPin, Users, MessageSquarePlus, Map, CheckCircle2 } from "lucide-react";
+import { MapPin, Users, MessageSquarePlus, CheckCircle2 } from "lucide-react";
 
-export default function CurrentEventCard() {
+interface CurrentEventCardProps {
+  title: string;
+  startedIn: string;
+  url: string,
+}
+
+export default function CurrentEventCard({ title, startedIn, url } : CurrentEventCardProps) {
   return (
     <section className="relative rounded-xl overflow-hidden bg-[#191f2f]/70 backdrop-blur-xl border border-[#463545]/50 p-6 shadow-[0_0_20px_-5px_rgba(78,222,163,0.1)] hover:shadow-[0_0_20px_-5px_rgba(78,222,163,0.3)] transition-all duration-300">
       <div className="absolute top-0 left-0 w-1.5 h-full bg-[#4edea3]"></div>
@@ -10,13 +16,13 @@ export default function CurrentEventCard() {
           <div className="flex items-center gap-2 mb-2">
             <span className="flex h-2 w-2 rounded-full bg-[#4edea3] animate-pulse"></span>
             <span className="text-xs text-[#4edea3] font-bold tracking-wider">ONGOING</span>
-            <span className="text-xs text-[#c2c6d6]">• Started 45m ago</span>
+            <span className="text-xs text-[#c2c6d6]">• Started {startedIn}</span>
           </div>
-          <h2 className="text-2xl font-bold mb-4">Q3 Strategic Roadmap Review</h2>
+          <h2 className="text-2xl font-bold mb-4">{title}</h2>
           <div className="flex flex-wrap gap-4 text-[#c2c6d6] mb-6">
             <div className="flex items-center gap-1.5">
               <MapPin size={16} />
-              <span className="text-sm">Main Boardroom (or Virtual)</span>
+              <span className="text-sm">{url == "" ? "undefined" : url}</span>
             </div>
             <div className="flex items-center gap-1.5">
               <Users size={16} />
@@ -29,10 +35,6 @@ export default function CurrentEventCard() {
           <button className="bg-[#2e3545] hover:bg-[#2e3545]/80 px-4 py-2 rounded-md flex items-center gap-2 transition-colors border border-[#424754]/30 text-xs font-semibold">
             <MessageSquarePlus size={14} />
             Add Description
-          </button>
-          <button className="bg-[#2e3545] hover:bg-[#2e3545]/80 px-4 py-2 rounded-md flex items-center gap-2 transition-colors border border-[#424754]/30 text-xs font-semibold">
-            <Map size={14} />
-            Google Maps
           </button>
         </div>
       </div>
