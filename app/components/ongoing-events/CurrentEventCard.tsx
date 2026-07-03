@@ -1,12 +1,17 @@
-import { MapPin, Users, MessageSquarePlus, CheckCircle2 } from "lucide-react";
+import { getEntitiesByEventId } from "@/lib/services/dashboard";
+import { MapPin, Users, MessageSquarePlus, CheckCircle2, ScrollText } from "lucide-react";
 
 interface CurrentEventCardProps {
+  id: number;
   title: string;
   startedIn: string;
   url: string,
+  description: string,
 }
 
-export default function CurrentEventCard({ title, startedIn, url } : CurrentEventCardProps) {
+export default async function CurrentEventCard({id, title, startedIn, url, description } : CurrentEventCardProps) {
+  const entities = await getEntitiesByEventId(id);
+  
   return (
     <section className="relative rounded-xl overflow-hidden bg-[#191f2f]/70 backdrop-blur-xl border border-[#463545]/50 p-6 shadow-[0_0_20px_-5px_rgba(78,222,163,0.1)] hover:shadow-[0_0_20px_-5px_rgba(78,222,163,0.3)] transition-all duration-300">
       <div className="absolute top-0 left-0 w-1.5 h-full bg-[#4edea3]"></div>
@@ -29,23 +34,38 @@ export default function CurrentEventCard({ title, startedIn, url } : CurrentEven
               <span className="text-sm">Architecture Team, Stakeholders</span>
             </div>
           </div>
+          <div className="flex items-center gap-1.5">
+              {
+                description && (
+                  <ScrollText size={16} />
+                )
+              }
+              <span className="text-sm">{description}</span>
+            </div>
         </div>
         
-        <div className="flex gap-2">
-          <button className="bg-[#2e3545] hover:bg-[#2e3545]/80 px-4 py-2 rounded-md flex items-center gap-2 transition-colors border border-[#424754]/30 text-xs font-semibold">
-            <MessageSquarePlus size={14} />
-            Add Description
-          </button>
-        </div>
+        {
+          !description && (
+            <div className="flex gap-2">
+            <button className="bg-[#2e3545] hover:bg-[#2e3545]/80 px-4 py-2 rounded-md flex items-center gap-2 transition-colors border border-[#424754]/30 text-xs font-semibold">
+              <MessageSquarePlus size={14} />
+              Add Description
+            </button>
+          </div>
+          )
+        }
+        
       </div>
 
       <div className="mt-6 pt-6 border-t border-[#424754]/30 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
           <p className="text-xs text-[#c2c6d6] mb-2 uppercase tracking-wider font-bold">Institutional Relationships</p>
           <div className="flex flex-wrap gap-2">
-            <span className="px-2 py-1 bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/30 rounded text-xs font-medium">Global Ops</span>
-            <span className="px-2 py-1 bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/30 rounded text-xs font-medium">Design Lab</span>
-            <span className="px-2 py-1 bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/30 rounded text-xs font-medium">+2 More</span>
+            {
+              entities && (
+                <span className="px-2 py-1 bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/30 rounded text-xs font-medium">{entities.data[0].name}</span>
+              )
+            }
           </div>
         </div>
         <button className="bg-[#00a572] text-[#00311f] px-6 py-3 rounded-md font-bold flex items-center gap-2 hover:opacity-90 active:scale-95 transition-all text-sm self-end sm:self-auto">

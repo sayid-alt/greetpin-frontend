@@ -1,4 +1,5 @@
 import { CalendarPlus, CalendarDays } from "lucide-react";
+import Link from "next/link";
 
 export default function NoOngoingEventCard() {
     return (
@@ -32,10 +33,13 @@ export default function NoOngoingEventCard() {
                 View Calendar
             </button>
             
-            <button className="bg-[#4edea3] text-[#00311f] px-5 py-2.5 rounded-md font-bold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all text-xs">
+            <Link
+                className="bg-[#4edea3] text-[#00311f] px-5 py-2.5 rounded-md font-bold flex items-center justify-center gap-2 hover:opacity-90 active:scale-95 transition-all text-xs"
+                href={"/schedule"}
+            >
                 <CalendarPlus size={15} />
                 Create New Event
-            </button>
+            </Link>
             </div>
         </div>
         </section>
