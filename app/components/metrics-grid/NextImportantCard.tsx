@@ -5,7 +5,12 @@ import React from 'react';
 
 
 const NextImportantCard = ({ response } : { response: ApiDataWrapper }) => {
-    const importantNext = response.data.filter((data) => data.importanceLevel == "CRITICAL")[0];
+    const importantNext = Array.isArray(response.data) 
+        ? response.data.find((data) => data.importanceLevel === "CRITICAL")
+        : null;
+
+    // 2. Add a guard clause so you don't render an empty box if there's no notice
+    if (!importantNext) return null;
 
     return (
         <>
