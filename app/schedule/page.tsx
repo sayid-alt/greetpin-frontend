@@ -84,9 +84,10 @@ export default function ScheduleEventPage() {
     const entityTypeRef = useRef<HTMLSelectElement>(null)
 
     const handleInputEntity = () => {
+        
+        // Handling Input Entity tags
         const entityNameValue = entityNameRef.current?.value
         const entityTypeValue = entityTypeRef.current?.value
-
         const inputEntity = {
             name: entityNameValue as string, 
             entityType: entityTypeValue?.toUpperCase() as string
@@ -120,7 +121,7 @@ export default function ScheduleEventPage() {
         console.log("title: ", dataInput.title)
 
         dataInput.title = dataInput.title == "" ? "New Event" : dataInput.title
-        dataInput.relatedEntities = [tags[0]];
+        dataInput.relatedEntities = tags;
         dataInput.startDateTime = `${dataInput.startDateTime}:00+07:00`;
         dataInput.endDateTime = `${dataInput.endDateTime}:00+07:00`;
 
