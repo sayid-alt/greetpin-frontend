@@ -69,7 +69,14 @@ export default async function CurrentEventCard({id, title, startedIn, url, descr
             {
               // Double check if it's not undefined or null and if it's contain the content
               entitiesData && entitiesData?.length > 0 && (
-                <span className="px-2 py-1 bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/30 rounded text-xs font-medium">{entitiesData[0].name}</span>
+                entitiesData.map(tag => (
+                  <span 
+                    className="px-2 py-1 bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/30 rounded text-xs font-medium"
+                    key={tag.id}
+                  >
+                    {tag.name}
+                  </span>
+                ))
               )
             }
           </div>
