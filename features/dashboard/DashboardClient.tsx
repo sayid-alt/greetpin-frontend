@@ -5,8 +5,9 @@ import { NextImportantCard } from "@/components/metrics-grid/NextImportantCard";
 import NoNotificationsSidebar from "@/components/NoNotificationSidebar";
 import OngoingEventSection from "@/features/dashboard/ongoing-events/OngoingEventSection";
 import UpcomingEvents from "@/features/dashboard/upcoming-events/UpcomingEvents";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
+import { useEffect } from "react";
 
 interface DashboardClientProps {
     onGoingEventData: Record<string, string | number>[] | undefined | null;
@@ -28,8 +29,10 @@ export default function DashboardClient({
         return Math.max(0, interval);
     };
 
+    const queryClient = useQueryClient();
+
     // 1. Upcoming Events Query
-    const { data: upcomingEvents } = useQuery({
+    const { data: upcomingEvents, dataUpdatedAt: upcomingUpdated } = useQuery({
         queryKey: ["upcomingEvents"],
         queryFn: async () => {
             const res = await fetch("api/upcoming");
@@ -63,10 +66,18 @@ export default function DashboardClient({
             
             // If it's about to finish or has finished, poll slightly faster (e.g., 5s) 
             // to catch the state transition smoothly without hammering the server at 1s.
-            return onGoingFinishInterval === 0 ? 5000 : onGoingFinishInterval;
+            return onGoingFinishInterval === 0 ? 1000 : onGoingFinishInterval;
         },
         refetchIntervalInBackground: true,
     });
+
+    //
+    useEffect(() => {
+        if (upcomingUpdated) {
+            // Force ongoing events to refetch immediately in the background
+            queryClient.invalidateQueries({ queryKey: ["onGoingEvents"] });
+        }
+    }, [upcomingUpdated, queryClient]);
 
     return (
         <main className="p-8 grid grid-cols-12 gap-6">
