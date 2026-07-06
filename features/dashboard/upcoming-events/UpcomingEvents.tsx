@@ -1,13 +1,16 @@
 
-import { ApiDataWrapper } from "@/app/config/componentConfig";
+import { NextResponse } from "next/server";
+import NoUpcomingEvents from "./NoUpcomingEvents";
 import RowEvent from "./RowEvent";
-import RowEventHighlighted from "./RowEventHighlighted";
-import RowEventPeers from "./RowEventPeers";
 
 
-export default function UpcomingEvents({ response }: { response: ApiDataWrapper }) { 
-  const data = response.data;
+interface UpcomingEventsProps {
+  data: NoInfer<() => Promise<NextResponse<Record<string, string | number>[] | null | undefined>>> | undefined;
+}
+
+export default function UpcomingEvents( { data } : UpcomingEventsProps) {
   
+  if (data == null) return <NoUpcomingEvents />
   return (
     <section className="bg-[#191f2f]/70 backdrop-blur-xl rounded-xl p-6 border border-[#424754]/50">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">

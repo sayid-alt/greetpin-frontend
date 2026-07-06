@@ -1,16 +1,31 @@
-import { ApiDataWrapper } from '@/app/config/componentConfig';
+
 import { AlertTriangle, ShieldCheck } from 'lucide-react';
 import moment from 'moment';
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
+interface NextImportantCardProps {
+    data: Record<string, string | number>[];
+}
 
-const NextImportantCard = ({ response } : { response: ApiDataWrapper }) => {
-    const importantNext = Array.isArray(response.data) 
-        ? response.data.find((data) => data.importanceLevel === "CRITICAL")
+const NextImportantCard = ({ data } : NextImportantCardProps) => {
+    const importantNext = Array.isArray(data) 
+        ? data.find((row) => row.importanceLevel === "CRITICAL")
         : null;
 
+    const [startTimeIntervalString, setStartTimeIntervalString] = useState(moment(importantNext?.startDateTime).fromNow());
+    
+    useEffect(() => {
+        const interval = setInterval(() => {
+            setStartTimeIntervalString(moment(importantNext?.startDateTime).fromNow());
+        }, 1000)
+        
+        return () => clearInterval(interval);
+    })
+
     // 2. Add a guard clause so you don't render an empty box if there's no notice
-    if (!importantNext) return null;
+    if (!importantNext) return <EmptyNextImportantCard/>;
+
+    
 
     return (
         <>
@@ -19,7 +34,7 @@ const NextImportantCard = ({ response } : { response: ApiDataWrapper }) => {
                     <h3 className="text-sm font-bold text-[#ffb786] tracking-wide">Important Notice</h3>
                     <AlertTriangle className="text-[#ffb786]" size={18} />
                 </div>
-                <p className="text-xs text-[#c2c6d6] mb-1">Starts {moment(importantNext.startDateTime).fromNow()}</p>
+                <p className="text-xs text-[#c2c6d6] mb-1">Starts {startTimeIntervalString}</p>
                 <p className="text-md font-bold text-[#dce2f7]">{importantNext.title}</p>
                 <p className="text-xs text-[#c2c6d6] mb-4">{importantNext.description}</p>
                 <div className="mt-auto">

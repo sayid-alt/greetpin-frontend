@@ -18,10 +18,11 @@ import {
     SpellCheck,
     SendHorizonal
 } from "lucide-react";
-import ButtonImportanceLevel from "./ButtonImportanceLevel";
-import TagChip from "./TagChip";
+import ButtonImportanceLevel from "@/features/create-event/ButtonImportanceLevel";
+import TagChip from "@/features/create-event/TagChip";
 import { useSession } from "next-auth/react";
-import FloatingAlert, {AlertType} from "../components/FloatingAlert";
+import FloatingAlert, {AlertType} from "@/components/FloatingAlert";
+import { useQueryClient } from "@tanstack/react-query";
 
 interface EntityDetail {
     name: string,
@@ -38,7 +39,7 @@ type SiteCategory = 'ONLINE' | 'ONSITE';
 
 export default function ScheduleEventPage() {
     // user session
-    const { data: session, status} = useSession();
+    const { data: session} = useSession();
     const token = session?.accessToken;
     
     // Forn field states
@@ -113,6 +114,14 @@ export default function ScheduleEventPage() {
     const [alertTitle, setAlertTitle] = useState<string>("");
     const [alertType, setAlertType] = useState<AlertType>("info");
 
+    const queryClient = useQueryClient();
+
+    function invalidateUpcomingEvents() {
+        queryClient.invalidateQueries({
+            queryKey: ['upcomingEvents']
+        })
+    }
+
     const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
         event.preventDefault();
 
@@ -144,7 +153,8 @@ export default function ScheduleEventPage() {
             setShowAlert(true)
             setAlertType("success");
             setAlertTitle(data.message);
-            setAlertMessage(data.data)
+            setAlertMessage(data.data);
+            invalidateUpcomingEvents();
         }
 
         if (!response.ok) {
@@ -164,6 +174,7 @@ export default function ScheduleEventPage() {
         setTags([]);
         setDescription("");
 
+        
         // console.log(data)
     }
 

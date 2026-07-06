@@ -1,21 +1,33 @@
-import { getEntitiesByEventId } from "@/lib/services/dashboard";
+"use client"
+
+import Tags from "@/components/Tags";
+import { useIsMounted } from "@/lib/hooks/UseIsMounted";
+
 import { MapPin, Users, MessageSquarePlus, CheckCircle2, ScrollText } from "lucide-react";
+import moment from "moment";
+import { useEffect, useState } from "react";
 
 interface CurrentEventCardProps {
-  id: number;
   title: string;
-  startedIn: string;
+  startDateTime: string;
+  endDateTime: string,
   url: string,
   description: string,
+  eventEntityTags: Record<string, string | number>[] | undefined | null;
 }
 
-export default async function CurrentEventCard({id, title, startedIn, url, description } : CurrentEventCardProps) {
-  const entities = await getEntitiesByEventId(id);
-  const entitiesData = entities
-    ? entities.data
-    : null
-  
-  console.log(entitiesData)
+export default function CurrentEventCard({title, startDateTime, endDateTime, url, description, eventEntityTags} : CurrentEventCardProps) {
+  const entitiesData = eventEntityTags ?? null;
+  const isMounted = useIsMounted();
+  const [startTimeIntervalString, setStartTimeIntervalString] = useState(moment(startDateTime).fromNow());
+        
+  useEffect(() => {
+      const interval = setInterval(() => {
+          setStartTimeIntervalString(moment(startDateTime).fromNow());
+      }, 1000)
+      
+      return () => clearInterval(interval);
+  })
 
   return (
     <section className="relative rounded-xl overflow-hidden bg-[#191f2f]/70 backdrop-blur-xl border border-[#463545]/50 p-6 shadow-[0_0_20px_-5px_rgba(78,222,163,0.1)] hover:shadow-[0_0_20px_-5px_rgba(78,222,163,0.3)] transition-all duration-300">
@@ -26,7 +38,10 @@ export default async function CurrentEventCard({id, title, startedIn, url, descr
           <div className="flex items-center gap-2 mb-2">
             <span className="flex h-2 w-2 rounded-full bg-[#4edea3] animate-pulse"></span>
             <span className="text-xs text-[#4edea3] font-bold tracking-wider">ONGOING</span>
-            <span className="text-xs text-[#c2c6d6]">• Started {startedIn}</span>
+            <span className="text-xs text-[#c2c6d6]">• Started {isMounted ? startTimeIntervalString : "Loading time ..."}</span>
+          </div>
+          <div>
+            <span className="text-xs text-[#ffb786] font-bold tracking-wider">Ends at {moment(endDateTime).format("h:mm A - MMM, Do YY")}</span>
           </div>
           <h2 className="text-2xl font-bold mb-4">{title}</h2>
           <div className="flex flex-wrap gap-4 text-[#c2c6d6] mb-6">
@@ -68,14 +83,9 @@ export default async function CurrentEventCard({id, title, startedIn, url, descr
           <div className="flex flex-wrap gap-2">
             {
               // Double check if it's not undefined or null and if it's contain the content
-              entitiesData && entitiesData?.length > 0 && (
-                entitiesData.map(tag => (
-                  <span 
-                    className="px-2 py-1 bg-[#4d8eff]/10 text-[#adc6ff] border border-[#adc6ff]/30 rounded text-xs font-medium"
-                    key={tag.id}
-                  >
-                    {tag.name}
-                  </span>
+              Array.isArray(entitiesData) && entitiesData?.length > 0 && (
+                entitiesData.map((tag) => (
+                  <Tags tagName={tag.name as string} key={tag.eventId}/ >
                 ))
               )
             }

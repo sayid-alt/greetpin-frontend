@@ -3,15 +3,16 @@
 import { useEffect, useState } from "react";
 import { Search, Bell, History, Star } from "lucide-react";
 import moment from "moment";
+import { useIsMounted } from "@/lib/hooks/UseIsMounted";
 
 export default function Header() {
   const [isFocused, setIsFocused] = useState(false);
-
   const [time, setTime] = useState(moment().format('LLLL'));
+  const isMounted = useIsMounted();
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setTime(moment().format("LLLL"))
+      setTime(moment().format('LLLL'))
     }, 1000)
 
     return () => clearInterval(interval);
@@ -31,8 +32,13 @@ export default function Header() {
           />
         </div>
       </div>
+      <div>
+      { isMounted 
+        ? time
+        : "Loading time ..."
+      }
+      </div>
 
-      <div>{time}</div>
 
       <div className="flex items-center gap-6">
         <div className="flex items-center gap-4">

@@ -1,8 +1,10 @@
 'use client';
 
-import { signup } from '@/lib/auth';
+import { signup } from '@/service/auth';
 import { useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react';
+
+import { Bolt, Lock, Mail, MoveRight, PersonStandingIcon, Shield } from "lucide-react";
 
 export default function SignUp() {
     const [username, setUsername] = useState("");
@@ -121,7 +123,7 @@ export default function SignUp() {
             {/* Logo Branding */}
             <div className="flex flex-col items-center mb-xl">
                 <div className="w-12 h-12 bg-primary flex items-center justify-center rounded-lg mb-md">
-                <span className="material-symbols-outlined text-on-primary text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}>bolt</span>
+                <span className="material-symbols-outlined text-on-primary text-[28px]" style={{ fontVariationSettings: "'FILL' 1" }}><Bolt/></span>
                 </div>
                 <h1 className="text-headline-lg font-headline-lg text-on-surface tracking-tight">EventFlow</h1>
                 <p className="text-on-surface-variant text-body-md mt-xs">Optimize your high-performance schedule.</p>
@@ -135,7 +137,7 @@ export default function SignUp() {
                     <div className="space-y-xs">
                         <label className="text-label-sm font-label-sm text-on-surface-variant" htmlFor="username">Username</label>
                         <div className="relative group">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] group-focus-within:text-primary transition-colors">person</span>
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] group-focus-within:text-primary transition-colors"><PersonStandingIcon/></span>
                             <input 
                                 className="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary text-on-surface rounded-lg py-3 pl-10 pr-md transition-all outline-none" 
                                 id="username" 
@@ -152,7 +154,7 @@ export default function SignUp() {
                     <div className="space-y-xs">
                         <label className="text-label-sm font-label-sm text-on-surface-variant" htmlFor="email">Email Address</label>
                         <div className="relative group">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] group-focus-within:text-primary transition-colors">mail</span>
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] group-focus-within:text-primary transition-colors"><Mail/></span>
                             <input 
                                 className="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary text-on-surface rounded-lg py-3 pl-10 pr-md transition-all outline-none" 
                                 id="email" 
@@ -169,7 +171,7 @@ export default function SignUp() {
                     <div className="space-y-xs">
                         <label className="text-label-sm font-label-sm text-on-surface-variant" htmlFor="password">Password</label>
                         <div className="relative group">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] group-focus-within:text-primary transition-colors">lock</span>
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] group-focus-within:text-primary transition-colors"><Lock size={20}/></span>
                             <input 
                                 className="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary text-on-surface rounded-lg py-3 pl-10 pr-md transition-all outline-none" 
                                 id="password" 
@@ -186,7 +188,7 @@ export default function SignUp() {
                     <div className="space-y-xs">
                         <label className="text-label-sm font-label-sm text-on-surface-variant" htmlFor="repassword">Retype Password</label>
                         <div className="relative group">
-                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] group-focus-within:text-primary transition-colors">shield_lock</span>
+                            <span className="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline text-[20px] group-focus-within:text-primary transition-colors"><Shield size={20}/></span>
                             <input 
                                 className="w-full bg-surface-container-lowest border border-outline-variant focus:border-primary focus:ring-1 focus:ring-primary text-on-surface rounded-lg py-3 pl-10 pr-md transition-all outline-none" 
                                 id="repassword" 
@@ -228,7 +230,7 @@ export default function SignUp() {
                         ) : (
                             <>
                                 <span>Create Account</span>
-                                <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+                                <span className="material-symbols-outlined text-[20px]"><MoveRight size={10} /></span>
                             </>
                         )}
                     </button>

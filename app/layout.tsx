@@ -1,6 +1,6 @@
 
-import AuthExpiryWatchers from "./components/AuthExpiryWatchers";
-import Providers from "./components/Providers";
+import AuthExpiryWatchers from "../components/AuthExpiryWatchers";
+import Providers from "../components/Providers";
 import "./globals.css";
 
 export const metadata = {

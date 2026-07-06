@@ -1,7 +1,6 @@
-import { auth } from "@/lib/auth";
+import { auth } from "@/service/auth";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export default auth((req: any) => {
+export default auth((req) => {
     const isLoggedIn = !!req.auth;
     const isOnloginPage = req.nextUrl.pathname === "/login";
 
