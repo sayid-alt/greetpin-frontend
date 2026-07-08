@@ -1,7 +1,7 @@
 "use client"
-import { MoreVertical } from 'lucide-react';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
+import RowEventButtonMore from './RowEventButtonMore';
 
 
 interface RowEventProps {
@@ -9,8 +9,7 @@ interface RowEventProps {
 }
 
 const RowEvent = ({ row }: RowEventProps) => {
-    const {importanceLevel, startDateTime, title} = row;
-
+    const {id: eventId, importanceLevel, startDateTime, title} = row;
     const [dateNow, setDateNow] = useState<number>(moment().date());
 
     useEffect(() => {
@@ -24,8 +23,6 @@ const RowEvent = ({ row }: RowEventProps) => {
     const startDateTimemili = new Date(startDateTime).getTime();
     const eventDayIntervalMili = startDateTimemili - dateNow;
     const eventDayIntervalHours = eventDayIntervalMili / 8400000;
-
-
     const statTime = eventDayIntervalHours <= 24 ?
         moment().add(eventDayIntervalMili, "milliseconds").calendar() : 
         moment(startDateTime).format("Do MMM YY")
@@ -42,11 +39,8 @@ const RowEvent = ({ row }: RowEventProps) => {
                     <span className="text-xs">{importanceLevel}</span>
                 </div>
             </div>
-            <div className="col-span-2 flex justify-end">
-                <button className="text-[#c2c6d6] hover:text-[#adc6ff] p-1 rounded transition-colors">
-                <MoreVertical size={16} />
-                </button>
-            </div>
+            {/* Context Menu Container */}
+            <RowEventButtonMore eventId={Number(eventId)} />
         </div>
     );
 };

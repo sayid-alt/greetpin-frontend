@@ -1,12 +1,12 @@
 "use client"
 
-import { IMPORTANCE_LEVEL_CONFIG, ImportanceLevel } from '@/app/config/componentConfig';
+import { EventData, IMPORTANCE_LEVEL_CONFIG, ImportanceLevel } from '@/config/componentConfig';
 import { ArrowRight, Calendar } from 'lucide-react';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';
 
 interface NextEventCardProps {
-    data: Record<string, string | number>[] | undefined | null;
+    data: EventData;
 }
 
 const NextEventCard = ({ data }: NextEventCardProps) => {

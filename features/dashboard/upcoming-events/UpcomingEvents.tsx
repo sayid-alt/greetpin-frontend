@@ -2,10 +2,18 @@
 import { NextResponse } from "next/server";
 import NoUpcomingEvents from "./NoUpcomingEvents";
 import RowEvent from "./RowEvent";
+import { EventData } from "@/config/componentConfig";
 
 
 interface UpcomingEventsProps {
-  data: NoInfer<() => Promise<NextResponse<Record<string, string | number>[] | null | undefined>>> | undefined;
+  data: NoInfer<() => Promise<
+    NextResponse<
+      EventData[] 
+        | null 
+        | undefined
+      >
+    >
+  > | undefined;
 }
 
 export default function UpcomingEvents( { data } : UpcomingEventsProps) {
@@ -23,10 +31,10 @@ export default function UpcomingEvents( { data } : UpcomingEventsProps) {
       </div>
 
       {/* Added max-height, vertical overflow, and padding for custom scrollbars */}
-      <div className="space-y-2 max-h-[400px] overflow-y-auto pr-1 chunk-scrollbar">
+      {/* <div className="space-y-2 max-h-[500px] overflow-y-auto pr-1 chunk-scrollbar"> */}
         {/* Event rows */}
         {Array.isArray(data) && data.map(row => <RowEvent key={row.id} row={row} />)}
-      </div>
+      {/* </div> */}
     </section>
   );
 }

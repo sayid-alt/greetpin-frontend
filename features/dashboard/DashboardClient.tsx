@@ -2,7 +2,9 @@
 
 import { NextEventCard } from "@/components/metrics-grid/NextEventCard";
 import { NextImportantCard } from "@/components/metrics-grid/NextImportantCard";
-import NoNotificationsSidebar from "@/components/NoNotificationSidebar";
+import { ConflictItem, EventData, NotificationDetails } from "@/config/componentConfig";
+
+import NotificationsSidebar from "@/features/dashboard/notifications-sidebar/NotificationsSidebar";
 import OngoingEventSection from "@/features/dashboard/ongoing-events/OngoingEventSection";
 import UpcomingEvents from "@/features/dashboard/upcoming-events/UpcomingEvents";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -10,8 +12,8 @@ import moment from "moment";
 import { useEffect } from "react";
 
 interface DashboardClientProps {
-    onGoingEventData: Record<string, string | number>[] | undefined | null;
-    upcomingEventData: Record<string, string | number>[] | undefined | null;
+    onGoingEventData: EventData | null | undefined;
+    upcomingEventData: EventData | null | undefined;
     ongoingEventTagsData: (Record<string, string | number>[] | undefined | null)[];
 }
 
@@ -22,8 +24,8 @@ export default function DashboardClient({
 }: DashboardClientProps) {
 
     // Helper to safely calculate remaining time until a target timestamp
-    const getMsUntil = (targetTime: string | number | undefined): number => {
-        if (!targetTime) return 0;
+    const getMsUntil = (targetTime: string | number | undefined): number | false => {
+        if (!targetTime) return false;
         const interval = Number(moment(targetTime)) - moment.now();
         // If the time is in the past, return 0 (stops polling) or a minimum throttle
         return Math.max(0, interval);
@@ -32,11 +34,17 @@ export default function DashboardClient({
     const queryClient = useQueryClient();
 
     // 1. Upcoming Events Query
-    const { data: upcomingEvents, dataUpdatedAt: upcomingUpdated } = useQuery({
-        queryKey: ["upcomingEvents"],
+    const { data: upcomingEvents } = useQuery({
+        queryKey: ["upcomingQuery"],
         queryFn: async () => {
             const res = await fetch("api/upcoming");
-            return res.json();
+            const data = res.json();
+            await Promise.all([
+                queryClient.invalidateQueries({ queryKey: ["notificationsQuery"]}),
+                queryClient.invalidateQueries({ queryKey: ["onGoingQuery"]})
+            ])
+            
+            return data;
         },
         staleTime: 1000 * 60,
         gcTime: 1000 * 5,
@@ -51,7 +59,7 @@ export default function DashboardClient({
 
     // 2. Ongoing Events Query
     const { data: onGoingEvents } = useQuery({
-        queryKey: ["onGoingEvents"],
+        queryKey: ["onGoingQuery"],
         queryFn: async () => {
             const res = await fetch("api/ongoing");
             return res.json();
@@ -71,13 +79,43 @@ export default function DashboardClient({
         refetchIntervalInBackground: true,
     });
 
-    //
-    useEffect(() => {
-        if (upcomingUpdated) {
-            // Force ongoing events to refetch immediately in the background
-            queryClient.invalidateQueries({ queryKey: ["onGoingEvents"] });
+    // Conflict events query
+    const { data: notificationData } = useQuery({
+        queryKey: ['notificationsQuery'],
+        queryFn: async () => {
+            const res = await fetch("/api/conflict");
+            if (!res.ok) throw new Error("Failed to fetch conflicts");
+            const data = await res.json();
+            return data;
+        },
+        staleTime: 1000 * 60,
+        gcTime: 1000 * 5,
+
+        select: (data) => {
+            console.log("data exists?", data)
+            if (!data) return [];
+
+            return data.flatMap((conflict: ConflictItem): NotificationDetails[] => {
+                const conflictWith = data.find(
+                    (upcoming: ConflictItem) => 
+                        moment(upcoming.event.startDateTime).isAfter(moment.now()) &&
+                        upcoming.event.id === conflict.conflictWithEventId
+                );
+
+                // Returning an empty array means "skip this item"
+                if (!conflictWith) return []; 
+
+                return [{
+                    conflictId: crypto.randomUUID(),
+                    type: "CONFLICT",
+                    title: "Conflict Detected",
+                    message: `${moment(conflict.event.startDateTime).fromNow()} • "${conflict.event.title}" with ${conflictWith.event?.title || 'Unknown Event'}`
+                }];
+            });
         }
-    }, [upcomingUpdated, queryClient]);
+    });
+
+    console.log("notif", notificationData);
 
     return (
         <main className="p-8 grid grid-cols-12 gap-6">
@@ -103,8 +141,11 @@ export default function DashboardClient({
 
             {/* Sidebar Column Right */}
             <div className="col-span-12 lg:col-span-4">
-                {/* <NotificationsSidebar /> */}
-                <NoNotificationsSidebar />
+                <NotificationsSidebar 
+                    notificationDetails={notificationData}
+                    analyticsInisght={null}
+                />
+                {/* <NoNotificationsSidebar /> */}
             </div>
 
             {/* Bottom Table Row */}

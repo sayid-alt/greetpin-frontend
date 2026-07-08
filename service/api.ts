@@ -1,5 +1,5 @@
-import { auth } from "./auth";
-import { getAccessToken } from "./helper";
+import { NextResponse } from "next/server";
+import { getAccessToken } from "../lib/helper";
 
 
 export interface ApiResponse {
@@ -7,7 +7,7 @@ export interface ApiResponse {
     message: string;
     data: Record<string, string | number>[];
     timestamp: string;
-}
+}1
 
 export async function getEvents (
     endpoint: string, 
@@ -54,6 +54,16 @@ export async function getEntitiesByEventId(
 
 
 
+export async function deleteEvents(id: number): Promise<void> {
+    const response = fetch(`/api/events/${id}`, {
+        method: "DELETE"
+    })
+
+    if (!(await response).ok) {
+        throw new Error(`Error to delete event, status: ${(await response).status}`)
+    }
+}
+
 export const getOnGoingEventData = async () => {
     const apiResponse = await getEvents("/ongoing");
     const data = apiResponse?.data ?? null;
@@ -70,4 +80,10 @@ export const getEventEntityTagsData = async (eventId: number) => {
     const apiResponse = await getEntitiesByEventId(eventId);
     const data = apiResponse?.data
     return data
+}
+
+export const getConflictEvents = async () => {
+    const apiResponse = await getEvents("/conflict");
+    const data = apiResponse?.data ?? null;
+    return data;
 }
