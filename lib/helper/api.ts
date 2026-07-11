@@ -19,7 +19,7 @@ export async function getEvents (
 ) : Promise<ApiResponse<EventData[]> | null | undefined> {
     console.log("Fetching API getEvents from endpoint: ", endpoint)
     const accessToken = await getAccessToken();
-    const response = await fetch(`http://localhost:8080/api/events${endpoint}`, {
+    const response = await fetch(`${getApiBaseBackendUrl()}/api/events${endpoint}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
@@ -40,7 +40,7 @@ export async function getEntitiesByEventId(
 ): Promise<ApiResponse<EventData[]> | null | undefined> {
     const accessToken = await getAccessToken();
 
-    const response = await fetch(`http://localhost:8080/api/entities?eventId=${eventId}`, {
+    const response = await fetch(`${getApiBaseBackendUrl()}/api/entities?eventId=${eventId}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",

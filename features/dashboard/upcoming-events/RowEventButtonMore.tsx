@@ -1,5 +1,4 @@
 import useMouseDownOutside from '@/lib/hooks/UseMouseDownOutside';
-import UseMouseDownOutside from '@/lib/hooks/UseMouseDownOutside';
 import { deleteEvents } from '@/lib/helper/api';
 import { useQueryClient } from '@tanstack/react-query';
 import { Edit2, MoreVertical, Trash2 } from 'lucide-react';

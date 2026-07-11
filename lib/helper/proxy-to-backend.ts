@@ -36,7 +36,9 @@ export async function proxyToBackend({
 
     // Define content-type headers
     if (body) {
-        headers['Content-Type'] = request!.headers.get("Content-Type") ?? "application/json" 
+        headers['Content-Type'] = 
+            request!.headers.get("Content-Type") 
+            ?? "application/json" 
     }
 
     // Fetch backend API
@@ -44,11 +46,11 @@ export async function proxyToBackend({
 
     // Check if response it NO_CONTENT (status code 204)
     if (response.status == 204){
-        return new NextResponse(null, { status: 204 });
+        return new Response(null, { status: 204, statusText: "No Content" });
     }
 
     // Define return value (json/text)
-    const contentType = response.headers.get("Content-Type") ?? "";
+    const contentType = response.headers.get("content-type") ?? "";
     const data = contentType.includes("application/json")
         ? await response.json()
         : await response.text()

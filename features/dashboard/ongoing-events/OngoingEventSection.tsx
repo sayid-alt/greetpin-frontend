@@ -1,9 +1,10 @@
+import { EventData } from "@/lib/config/types-config";
 import CurrentEventCard from "./CurrentEventCard";
 import NoOngoingEventCard from "./NoOngoingEventCard";
 
 interface OngoingEventSectionProps {
-    onGoingEventData: Record<string, string | number>[] | undefined | null;
-    onGoingEventTagsData: (Record<string, string | number>[] | undefined | null)[];
+    onGoingEventData: EventData[] | undefined | null;
+    onGoingEventTagsData: (EventData[] | undefined | null)[];
 };
 
 export default function OngoingEventSection({ 

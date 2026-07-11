@@ -1,6 +1,5 @@
 import { proxyToBackend } from "@/lib/helper/proxy-to-backend";
 
-
 interface RouteParams {
     params: Promise<{ path?: string[]}>
 }

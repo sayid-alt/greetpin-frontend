@@ -9,6 +9,7 @@ import OngoingEventSection from "@/features/dashboard/ongoing-events/OngoingEven
 import UpcomingEvents from "@/features/dashboard/upcoming-events/UpcomingEvents";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
+import { getOnGoingEventData } from "@/lib/helper/api";
 
 interface DashboardClientProps {
     onGoingEventData: EventData[] | null | undefined;
@@ -38,17 +39,21 @@ export default function DashboardClient({
     const { data: upcomingEvents } = useQuery({
         queryKey: ["upcomingQuery"],
         queryFn: async () => {
-            console.log("Fetch upcoming query ...")
-            const res = await fetch("/api/v2/events/upcoming");
+            console.log("UPCOMING: Fetch upcoming query ...")
+            const res = await fetch("/api/events/upcoming");
+            if (res.status == 204) return null;
+            if (!res.ok) throw new Error(
+                "Network response was not ok!, Something wrong. I don't like it!"
+            );
             const payload = await res.json();
-            console.log("upcoming payload:", payload)
+            console.log("UPCOMING: upcoming payload:", payload)
             
             await Promise.all([
                 queryClient.invalidateQueries({ queryKey: ["conflictQuery"]}),
                 queryClient.invalidateQueries({ queryKey: ["onGoingQuery"]})
             ])
             
-            return payload ?? null;
+            return payload.data ?? null;
         },
         staleTime: 1000 * 60,
         gcTime: 1000 * 5,
@@ -56,7 +61,9 @@ export default function DashboardClient({
         // Safely calculate next refetch based on the first upcoming event
         refetchInterval: (query) => {
             const firstEvent = query.state.data?.[0];
-            return getMsUntil(firstEvent?.['startDateTime']);
+            const upcomingRefetchInterval = getMsUntil(firstEvent?.['startDateTime']);
+            console.log("UPCOMING: refetch interval", upcomingRefetchInterval)
+            return upcomingRefetchInterval
         },
         refetchIntervalInBackground: true,
     });
@@ -66,10 +73,15 @@ export default function DashboardClient({
     const { data: onGoingEvents } = useQuery({
         queryKey: ["onGoingQuery"],
         queryFn: async () => {
-            console.log("ongoing query refetch!")
+            console.log("ONGOING: query refetch!")
             const res = await fetch("/api/events/ongoing");
+            console.log("ONGOING: Events res status", res.status)
+            if (res.status == 204) return null;
+            if (!res.ok) throw new Error(
+                "Network response was not ok!, Something wrong. I don't like it!"
+            );
             const payload = await res.json();
-            return payload.data;
+            return payload.data ?? null;
         },
         staleTime: 1000 * 60,
         gcTime: 1000 * 5,
@@ -77,24 +89,32 @@ export default function DashboardClient({
         // Decoupled interval calculation
         refetchInterval: (query) => {
             const firstEvent = query.state.data?.[0];
+            console.log("ONGOING: first event ongoing", firstEvent)
             const onGoingFinishInterval = getMsUntil(firstEvent?.['endDateTime']);
-            
+            console.log("ONGOING: finish interval", onGoingFinishInterval)
             // If it's about to finish or has finished, poll slightly faster (e.g., 5s) 
             // to catch the state transition smoothly without hammering the server at 1s.
             return onGoingFinishInterval === 0 ? 1000 : onGoingFinishInterval;
         },
         refetchIntervalInBackground: true,
     });
+    console.log("OnGoingEventsData", onGoingEvents);
+    
 
     // Conflict events query
     const { data: conflictData } = useQuery({
         queryKey: ['conflictQuery'],
         queryFn: async () => {
-            console.log("Conflict query fetching ... ")
+            console.log("CONFLICT: Conflict query fetching ... ")
             const res = await fetch("/api/events/conflict");
-            if (!res.ok) throw new Error("Failed to fetch conflicts");
-            const data = await res.json();
-            return data;
+            console.log("ONGOING: res status", res.status);
+            if (res.status == 204) return null;
+            if (!res.ok) throw new Error(
+                "Network response was not ok!, Something wrong. I don't like it!"
+            );
+            const payload = await res.json();
+            console.log("ONGOING: (Inside QueryFn) data", payload.data)
+            return payload.data;
         },
 
         staleTime: 1000 * 60,
@@ -122,6 +142,7 @@ export default function DashboardClient({
             });
         }
     });
+    console.log("ONGOING: Filtered Conflict data", conflictData);
 
     return (
         <main className="p-8 grid grid-cols-12 gap-6">
