@@ -1,28 +1,14 @@
-"use client";
+"use client"
 
-import { useRef, useState } from "react";
-import Link from "next/link";
-import { 
-    Bell, 
-    History, 
-    Star, 
-    Calendar, 
-    Clock, 
-    ChevronDown, 
-    MapPin, 
-    Link2, 
-    Bold, 
-    Italic, 
-    List, 
-    Paperclip, 
-    SpellCheck,
-    SendHorizonal
-} from "lucide-react";
-import ButtonImportanceLevel from "@/features/create-event/ButtonImportanceLevel";
-import TagChip from "@/features/create-event/TagChip";
-import { useSession } from "next-auth/react";
-import FloatingAlert, {AlertType} from "@/components/FloatingAlert";
-import { useQueryClient } from "@tanstack/react-query";
+import FloatingAlert, { AlertType } from '@/components/FloatingAlert';
+import { useMutation, useQueryClient } from '@tanstack/react-query';
+import { Bold, Calendar, ChevronDown, Clock, Italic, Link2, List, MapPin, Paperclip, SendHorizonal, SpellCheck } from 'lucide-react';
+import React, { Activity, useRef, useState } from 'react'
+import ButtonImportanceLevel from './ButtonImportanceLevel';
+import TagChip from './TagChip';
+import { getAccessToken } from '@/lib/helper/session-access-token';
+import { useSession } from 'next-auth/react';
+import LoadingOverlay from '@/components/ui/LoadingOverlay';
 
 interface EntityDetail {
     name: string,
@@ -36,12 +22,33 @@ interface EventFormData {
 
 type SiteCategory = 'ONLINE' | 'ONSITE';
 
+interface EventFormProps {
+    ref: React.RefObject<HTMLDivElement>,
+    onCancel: () => void
+}
 
-export default function ScheduleEventPage() {
-    // user session
-    const { data: session} = useSession();
-    const token = session?.accessToken;
-    
+
+// Helper API POST for create an event API
+async function createEvent(
+    dataInput: EventFormData, 
+    accessToken: string | undefined
+) {
+    const response = await fetch("http://localhost:8080/api/events/create", {
+        method: "POST",
+        body: JSON.stringify(dataInput),
+        headers: {
+            'Content-Type': "application/json",
+            'Authorization': `Bearer ${accessToken}`
+        }
+    })
+
+    return response;
+}
+
+
+export default function EventForm({ref, onCancel}: EventFormProps) {
+    const {data: session} = useSession();
+    const accessToken = session?.accessToken;
     // Forn field states
     const [title, setTitle] = useState<string>("New Event");
     const [startDateTime, setStartDateTime] = useState<string>("");
@@ -51,6 +58,15 @@ export default function ScheduleEventPage() {
     const [url, setUrl] = useState<string>("");
     const [tags, setTags] = useState<EntityDetail[]>([]);
     const [description, setDescription] = useState<string>("");
+    // handling submit the form
+    const [showAlert, setShowAlert] = useState(false);
+    const [alertMessage, setAlertMessage] = useState<string | null | unknown>(null);
+    const [alertTitle, setAlertTitle] = useState<string | null | unknown>(null);
+    const [alertType, setAlertType] = useState<AlertType>("info");
+
+    const [isLoading, setIsLoading] = useState<boolean>(false);
+
+    const queryClient = useQueryClient();
 
 
     const levelOptionTags = [
@@ -85,8 +101,6 @@ export default function ScheduleEventPage() {
     const entityTypeRef = useRef<HTMLSelectElement>(null)
 
     const handleInputEntity = () => {
-        
-        // Handling Input Entity tags
         const entityNameValue = entityNameRef.current?.value
         const entityTypeValue = entityTypeRef.current?.value
         const inputEntity = {
@@ -108,27 +122,30 @@ export default function ScheduleEventPage() {
         }
     }
 
-    // handling submit the form
-    const [showAlert, setShowAlert] = useState(false);
-    const [alertMessage, setAlertMessage] = useState<string>("");
-    const [alertTitle, setAlertTitle] = useState<string>("");
-    const [alertType, setAlertType] = useState<AlertType>("info");
 
-    const queryClient = useQueryClient();
+    const { 
+        mutateAsync,
+        isPending
+    } = useMutation({
+        mutationFn: (dataInput: EventFormData) => createEvent(dataInput, accessToken)
+    })
 
-    function invalidateUpcomingEvents() {
-        queryClient.invalidateQueries({
-            queryKey: ['upcomingEvents']
-        })
-    }
-
-    const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
+    const handleSubmit = async (
+        event: React.SubmitEvent<HTMLFormElement>
+    ) => {
+        function invalidateUpcomingEvents() {
+            queryClient.invalidateQueries({
+                queryKey: ['upcomingQuery']
+            })
+        }
         event.preventDefault();
+        setIsLoading(true);
 
         const formData = new FormData(event.currentTarget)
         const dataInput = Object.fromEntries(formData) as EventFormData;
         console.log("title: ", dataInput.title)
 
+        // Data Input Preparation
         dataInput.title = dataInput.title == "" ? "New Event" : dataInput.title
         dataInput.relatedEntities = tags;
         dataInput.startDateTime = `${dataInput.startDateTime}:00+07:00`;
@@ -137,89 +154,70 @@ export default function ScheduleEventPage() {
         // DEBUGGING
         console.log("data input", dataInput)
 
-        const response = await fetch("http://localhost:8080/api/events/create", {
-            method: "POST",
-            body: JSON.stringify(dataInput),
-            headers: {
-                'Content-Type': "application/json",
-                'Authorization': `Bearer ${token}`
+        // Create an event by API POST
+        // const response = await createEvent(dataInput, accessToken);
+        try {
+            const response = await mutateAsync(dataInput);
+    
+            let data = null;
+            const text = await response.text(); // Get raw text first
+            data = text ? JSON.parse(text) : null;
+    
+            if (response.status == 201) {
+                console.log("status 201")
+                setShowAlert(true)
+                setAlertType("success");
+                setAlertTitle(data.message);
+                setAlertMessage(data.data);
+                invalidateUpcomingEvents();
             }
-        })
-
-        let data = null;
-        const text = await response.text(); // Get raw text first
-        data = text ? JSON.parse(text) : null;
-        if (response.status == 201) {
-            setShowAlert(true)
-            setAlertType("success");
-            setAlertTitle(data.message);
-            setAlertMessage(data.data);
-            invalidateUpcomingEvents();
-        }
-
-        if (!response.ok) {
+    
+            if (!response.ok) {
+                setShowAlert(true)
+                setAlertType("error");
+                setAlertTitle(data.message);
+                setAlertMessage(data.data);
+                // throw new Error(`Server error: ${response.status}`);
+            }
+            
+        } catch (error) {
             setShowAlert(true)
             setAlertType("error");
-            setAlertTitle(data.message);
-            setAlertMessage(data.data);
-            // throw new Error(`Server error: ${response.status}`);
+            setAlertTitle(error);
+            setAlertMessage(error);
+        } finally {
+            // Set all field to default value
+            setTitle("New Event");
+            setStartDateTime("");
+            setEndDateTime("");
+            setSiteCategory("ONLINE");
+            setUrl("");
+            setTags([]);
+            setDescription("");
+            setIsLoading(false);
         }
 
-        // Set all field to default value
-        setTitle("New Event");
-        setStartDateTime("");
-        setEndDateTime("");
-        setSiteCategory("ONLINE");
-        setUrl("");
-        setTags([]);
-        setDescription("");
-
-        
-        // console.log(data)
     }
-
+        // console.log(da
     return (
-    <div className="flex-1 min-h-screen flex flex-col bg-[#0c1322]">
-        {
-            showAlert && (
-                <FloatingAlert
-                    type={alertType}
-                    title={alertTitle}
-                    message={alertMessage}
-                    duration={5000}
-                    onClose={() => setShowAlert(false)}
-                />
-            )
-        }
-        {/* TopAppBar Header */}
-        <header className="h-16 flex justify-between items-center px-8 w-full bg-[#0c1322] border-b border-[#424754]/50 sticky top-0 z-40">
-            <div className="flex items-center gap-6">
-            <span className="text-2xl font-semibold text-[#dce2f7]">Schedule Event</span>
-            </div>
-            <div className="flex items-center gap-6">
-            <div className="flex items-center gap-4 text-[#c2c6d6]">
-                <Bell className="cursor-pointer hover:text-[#adc6ff] transition-all" size={20} />
-                <History className="cursor-pointer hover:text-[#adc6ff] transition-all" size={20} />
-                <Star className="cursor-pointer hover:text-[#adc6ff] transition-all" size={20} />
-            </div>
-            <div className="h-8 w-[1px] bg-[#424754] mx-2"></div>
-            <div className="flex items-center gap-2">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img 
-                alt="User Profile" 
-                className="w-8 h-8 rounded-full border border-[#424754]" 
-                src="https://lh3.googleusercontent.com/aida-public/AB6AXuDcMrJhf7zX3bGnl08Wzovfk8mmP0RHilm9tlYltOfp9J8aI6u-KQ46KNCFu23FilTM3NmhU7wZf3v4fQWHBRzdAUuG3AfZEarmxzAC8W4Tnrp5hmce0RGJL5N4ak54i29MrQbH6fJ62pQwfrCW8mY0tIuqj2EgE7TPiH0hM5hqBV2OVOArirgPTam0HJppk-0qhJeY6b03cxHkMaMT2IOXKLf07fehME2dVMfKrohO1P-4hP34V4UbDYOeIVv13-pzq93di0st5iDv"
-                />
-                <span className="text-xs font-bold text-[#adc6ff]">Current Event</span>
-            </div>
-            </div>
-        </header>
-
-        {/* Canvas / Form Body Container */}
-        <main className="flex-1 overflow-y-auto p-8 bg-[#0c1322] relative">
+        <main className="flex-1 overflow-y-auto p-8 bg-[#0c1322] relative" ref={ref}>
+            <LoadingOverlay 
+                message={"Adding event"}
+                isVisible={isLoading}
+            />
+            <Activity mode={showAlert ? "visible" : "hidden"}>
+                    <FloatingAlert
+                            type={alertType}
+                            title={alertTitle as string}
+                            message={alertMessage as string}
+                            duration={1000 * 3} // 3 seconds
+                            onClose={() => setShowAlert(false)}
+                        />
+            </Activity>
             <div className="max-w-4xl mx-auto space-y-6 pb-12">
-
+        
             {/* Core Interactive Card Structure */}
+            
             <div className="bg-[#141b2b] border border-[#424754]/50 rounded-xl p-6 shadow-sm">
                     <form 
                         onSubmit={(e) => handleSubmit(e)} 
@@ -237,7 +235,6 @@ export default function ScheduleEventPage() {
                                 name="title"
                             />
                         </div>
-
                         {/* Date and Time Range Block */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-1">
@@ -269,7 +266,6 @@ export default function ScheduleEventPage() {
                             </div>
                             </div>
                         </div>
-
                         {/* Category & Importance Picker Selection */}
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div className="space-y-1">
@@ -302,7 +298,6 @@ export default function ScheduleEventPage() {
                             </div>
                             </div>
                         </div>
-
                         {/* Location Input Form Elements */}
                         <div className="space-y-1">
                             <div className="flex justify-between items-center">
@@ -324,7 +319,6 @@ export default function ScheduleEventPage() {
                                 />
                             </div>
                         </div>
-
                         {/* People Invitation tag Input Field */}
                         <div className="space-y-1">
                             <label 
@@ -383,7 +377,6 @@ export default function ScheduleEventPage() {
                                 </button>
                             </div>
                         </div>
-
                         {/* Description Toolbar Rich Text Canvas Layout */}
                         <div className="space-y-1">
                             <label className="text-xs font-semibold text-[#c2c6d6] tracking-wider">DESCRIPTION / JOURNALING</label>
@@ -409,7 +402,6 @@ export default function ScheduleEventPage() {
                             </textarea>
                             </div>
                         </div>
-
                         {/* Form Action Submissions */}
                         <div className="pt-6 flex items-center justify-between border-t border-[#424754]/30">
                             <button className="px-6 py-2.5 border border-[#424754] rounded text-sm text-[#c2c6d6] font-bold hover:bg-[#2e3545]/40 transition-colors active:scale-95" 
@@ -418,24 +410,26 @@ export default function ScheduleEventPage() {
                             Save Draft
                             </button>
                             <div className="flex gap-4">
-                            <Link href="/" className="px-6 py-2.5 text-sm text-[#c2c6d6] font-bold hover:text-[#dce2f7] transition-colors flex items-center">
-                                Cancel
-                            </Link>
-                            <button className="px-8 py-2.5 bg-[#adc6ff] text-[#002e6a] font-bold rounded active:scale-95 transition-all shadow-lg shadow-[#adc6ff]/10" 
+                                <button 
+                                    onClick={onCancel} 
+                                    className="px-6 py-2.5 text-sm text-[#c2c6d6] font-bold hover:text-[#dce2f7] transition-colors flex items-center">
+                                    Cancel
+                                </button>
+                                <button 
+                                    className="px-8 py-2.5 bg-[#adc6ff] text-[#002e6a] font-bold rounded active:scale-95 transition-all shadow-lg shadow-[#adc6ff]/10" 
                                     type="submit"
-                            >
-                                Create Event
-                            </button>
+                                    disabled={isPending}
+                                >
+                                    Create Event
+                                </button>
                             </div>
                         </div>
                     </form>
                 </div>
             </div>
-
             {/* Ambient Glowing Background Elements */}
             <div className="absolute top-0 right-0 -z-10 w-96 h-96 bg-[#adc6ff]/5 blur-[120px] rounded-full pointer-events-none"></div>
             <div className="absolute bottom-0 left-0 -z-10 w-64 h-64 bg-[#4edea3]/5 blur-[100px] rounded-full pointer-events-none"></div>
         </main>
-    </div>
-    );
+    )
 }

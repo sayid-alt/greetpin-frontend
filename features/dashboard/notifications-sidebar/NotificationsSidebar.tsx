@@ -1,15 +1,18 @@
 import { BellOff, ImageOff } from "lucide-react";
 import ItemInfo from "./components/ItemInfo";
-import { NotificationDetails } from "@/config/componentConfig";
+import { NotificationDetails } from "@/lib/config/types-config";
 
 interface NotificationsSidebarProps {
-  notificationDetails: NoInfer<NotificationDetails[]> | undefined | null;
+  conflictData: NoInfer<NotificationDetails[]> | undefined | null;
   analyticsInisght: Record<string, number> | null;
 }
 
-export default function NotificationsSidebar({ notificationDetails, analyticsInisght } : NotificationsSidebarProps) {
+export default function NotificationsSidebar({ 
+  conflictData, 
+  analyticsInisght 
+} : NotificationsSidebarProps) {
   
-  if (!Array.isArray(notificationDetails) || notificationDetails.length == 0) return <EmptyNotificationsSidebar />;
+  if (!Array.isArray(conflictData) || conflictData.length == 0) return <EmptyNotificationsSidebar />;
 
   return (
     <section className="bg-[#191f2f]/70 backdrop-blur-xl rounded-xl p-6 h-full border border-[#424754]/50 flex flex-col">
@@ -21,9 +24,9 @@ export default function NotificationsSidebar({ notificationDetails, analyticsIni
       <div className="space-y-6 overflow-y-auto max-h-[600px] pr-2 scrollbar-thin">
 
         {
-          Array.isArray(notificationDetails) && notificationDetails.map((detail) => {
+          Array.isArray(conflictData) && conflictData.map((detail) => {
             return detail && <ItemInfo 
-                    key={detail.conflictId}
+                    key={detail.id}
                     detail={detail}
                   />
           })

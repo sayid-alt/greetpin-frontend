@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import NoUpcomingEvents from "./NoUpcomingEvents";
 import RowEvent from "./RowEvent";
-import { EventData } from "@/config/componentConfig";
+import { EventData } from "@/lib/config/types-config";
 
 
 interface UpcomingEventsProps {

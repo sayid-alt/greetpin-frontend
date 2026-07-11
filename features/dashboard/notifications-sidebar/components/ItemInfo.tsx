@@ -1,4 +1,4 @@
-import { NotificationDetails } from '@/config/componentConfig'
+import { NotificationDetails } from '@/lib/config/types-config'
 import { AlertOctagon, CheckCircle, SendHorizonal } from 'lucide-react'
 import React from 'react'
 

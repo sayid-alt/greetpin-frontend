@@ -1,4 +1,4 @@
-import { auth } from "../service/auth"
+import { auth } from "./auth"
 
 const getAccessToken = async () => {
     const session = await auth();

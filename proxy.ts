@@ -1,4 +1,4 @@
-import { auth } from "@/service/auth";
+import { auth } from "@/lib/helper/auth";
 
 export default auth((req) => {
     const isLoggedIn = !!req.auth;

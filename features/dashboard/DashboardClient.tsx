@@ -2,18 +2,17 @@
 
 import { NextEventCard } from "@/components/metrics-grid/NextEventCard";
 import { NextImportantCard } from "@/components/metrics-grid/NextImportantCard";
-import { ConflictItem, EventData, NotificationDetails } from "@/config/componentConfig";
+import { ConflictItem, EventData, NotificationDetails } from "@/lib/config/types-config";
 
 import NotificationsSidebar from "@/features/dashboard/notifications-sidebar/NotificationsSidebar";
 import OngoingEventSection from "@/features/dashboard/ongoing-events/OngoingEventSection";
 import UpcomingEvents from "@/features/dashboard/upcoming-events/UpcomingEvents";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import moment from "moment";
-import { useEffect } from "react";
 
 interface DashboardClientProps {
-    onGoingEventData: EventData | null | undefined;
-    upcomingEventData: EventData | null | undefined;
+    onGoingEventData: EventData[] | null | undefined;
+    upcomingEventData: EventData[] | null | undefined;
     ongoingEventTagsData: (Record<string, string | number>[] | undefined | null)[];
 }
 
@@ -24,7 +23,9 @@ export default function DashboardClient({
 }: DashboardClientProps) {
 
     // Helper to safely calculate remaining time until a target timestamp
-    const getMsUntil = (targetTime: string | number | undefined): number | false => {
+    const getMsUntil = (
+        targetTime: string | number | undefined
+    ): number | false => {
         if (!targetTime) return false;
         const interval = Number(moment(targetTime)) - moment.now();
         // If the time is in the past, return 0 (stops polling) or a minimum throttle
@@ -37,14 +38,17 @@ export default function DashboardClient({
     const { data: upcomingEvents } = useQuery({
         queryKey: ["upcomingQuery"],
         queryFn: async () => {
-            const res = await fetch("api/upcoming");
-            const data = res.json();
+            console.log("Fetch upcoming query ...")
+            const res = await fetch("/api/v2/events/upcoming");
+            const payload = await res.json();
+            console.log("upcoming payload:", payload)
+            
             await Promise.all([
-                queryClient.invalidateQueries({ queryKey: ["notificationsQuery"]}),
+                queryClient.invalidateQueries({ queryKey: ["conflictQuery"]}),
                 queryClient.invalidateQueries({ queryKey: ["onGoingQuery"]})
             ])
             
-            return data;
+            return payload ?? null;
         },
         staleTime: 1000 * 60,
         gcTime: 1000 * 5,
@@ -56,13 +60,16 @@ export default function DashboardClient({
         },
         refetchIntervalInBackground: true,
     });
+    console.log("Upcoming Query data", upcomingEvents);
 
     // 2. Ongoing Events Query
     const { data: onGoingEvents } = useQuery({
         queryKey: ["onGoingQuery"],
         queryFn: async () => {
-            const res = await fetch("api/ongoing");
-            return res.json();
+            console.log("ongoing query refetch!")
+            const res = await fetch("/api/events/ongoing");
+            const payload = await res.json();
+            return payload.data;
         },
         staleTime: 1000 * 60,
         gcTime: 1000 * 5,
@@ -80,19 +87,20 @@ export default function DashboardClient({
     });
 
     // Conflict events query
-    const { data: notificationData } = useQuery({
-        queryKey: ['notificationsQuery'],
+    const { data: conflictData } = useQuery({
+        queryKey: ['conflictQuery'],
         queryFn: async () => {
-            const res = await fetch("/api/conflict");
+            console.log("Conflict query fetching ... ")
+            const res = await fetch("/api/events/conflict");
             if (!res.ok) throw new Error("Failed to fetch conflicts");
             const data = await res.json();
             return data;
         },
+
         staleTime: 1000 * 60,
         gcTime: 1000 * 5,
 
         select: (data) => {
-            console.log("data exists?", data)
             if (!data) return [];
 
             return data.flatMap((conflict: ConflictItem): NotificationDetails[] => {
@@ -106,7 +114,7 @@ export default function DashboardClient({
                 if (!conflictWith) return []; 
 
                 return [{
-                    conflictId: crypto.randomUUID(),
+                    id: crypto.randomUUID(),
                     type: "CONFLICT",
                     title: "Conflict Detected",
                     message: `${moment(conflict.event.startDateTime).fromNow()} • "${conflict.event.title}" with ${conflictWith.event?.title || 'Unknown Event'}`
@@ -114,8 +122,6 @@ export default function DashboardClient({
             });
         }
     });
-
-    console.log("notif", notificationData);
 
     return (
         <main className="p-8 grid grid-cols-12 gap-6">
@@ -127,22 +133,19 @@ export default function DashboardClient({
                     onGoingEventTagsData={ongoingEventTagsData}
                 />
                 
-
                 {/* Metric grid section */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Next event card */}
                     <NextEventCard data={upcomingEvents} />
-                
                 {/* Important next event card */}
                     <NextImportantCard data={upcomingEvents} />
-                
                 </div>
             </div>
 
             {/* Sidebar Column Right */}
             <div className="col-span-12 lg:col-span-4">
                 <NotificationsSidebar 
-                    notificationDetails={notificationData}
+                    conflictData={conflictData}
                     analyticsInisght={null}
                 />
                 {/* <NoNotificationsSidebar /> */}
@@ -154,6 +157,6 @@ export default function DashboardClient({
                     data={upcomingEvents}
                 /> 
             </div>
-            </main>
+        </main>
     );
 };

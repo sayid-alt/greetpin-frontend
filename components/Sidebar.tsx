@@ -13,6 +13,7 @@ import {
   LogOut 
 } from "lucide-react";
 import { signOut } from "next-auth/react";
+import ButtonSchedule from "./ButtonSchedule";
 
 export default function Sidebar() {
   const [activeTab, setActiveTab] = useState("Dashboard");
@@ -58,10 +59,12 @@ export default function Sidebar() {
       </nav>
 
       <div className="px-4 mt-auto pt-6 space-y-1">
-        <Link href="/schedule" className="w-full bg-[#adc6ff] text-[#002e6a] py-3 rounded-md font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform">
+        <ButtonSchedule
+          style={"w-full bg-[#adc6ff] text-[#002e6a] py-3 rounded-md font-bold flex items-center justify-center gap-2 active:scale-95 transition-transform"}
+        >
           <Plus size={18} />
           Schedule Event
-        </Link>
+        </ButtonSchedule>
         <div className="pt-6 border-t border-[#424754]/30 space-y-1">
           <a className="flex items-center gap-4 px-4 py-2 rounded text-[#c2c6d6] font-medium hover:bg-[#2e3545]/50 transition-colors" href="#">
             <HelpCircle size={20} />

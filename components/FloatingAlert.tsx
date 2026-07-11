@@ -6,8 +6,8 @@ export type AlertType = 'success' | 'error' | 'warning' | 'info';
 
 interface AlertProps {
     type: AlertType,
-    title: string,
-    message: string,
+    title: string | null,
+    message: string | null,
     duration: number,
     onClose?: () => void
 }

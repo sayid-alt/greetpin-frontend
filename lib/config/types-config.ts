@@ -37,7 +37,7 @@ export interface ConflictItem {
 export type TypeInfo = "CONFLICT" | "INVITATION" | "COMPLETED"
 
 export type NotificationDetails =  {
-    conflictId: string | number;
+    id: string | number;
     type: TypeInfo;
     title: string;
     message: string;

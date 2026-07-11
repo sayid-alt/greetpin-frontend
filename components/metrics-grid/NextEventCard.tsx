@@ -1,6 +1,6 @@
 "use client"
 
-import { EventData, IMPORTANCE_LEVEL_CONFIG, ImportanceLevel } from '@/config/componentConfig';
+import { EventData, IMPORTANCE_LEVEL_CONFIG, ImportanceLevel } from '@/lib/config/types-config';
 import { ArrowRight, Calendar } from 'lucide-react';
 import moment from 'moment';
 import React, { useEffect, useState } from 'react';

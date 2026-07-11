@@ -1,39 +1,43 @@
-import { NextResponse } from "next/server";
-import { getAccessToken } from "../lib/helper";
+import { ApiResponse, EventData } from "../config/types-config";
+import { getAccessToken } from "./session-access-token";
 
 
-export interface ApiResponse {
-    success: boolean;
-    message: string;
-    data: Record<string, string | number>[];
-    timestamp: string;
-}1
+function getApiBaseUrl() {
+    // Browser: relative URL is fine
+    if (typeof window !== "undefined") return "";
+    // Server: must be absolute
+    return process.env.NEXT_PUBLIC_APP_URL ?? "http://localhost:3000";
+}
+
+function getApiBaseBackendUrl() {
+    // if (typeof window !== "undefined") return "";
+    return process.env.NEXT_BE_API_URL ?? "http://localhost:8080"
+}
 
 export async function getEvents (
     endpoint: string, 
-) : Promise<ApiResponse | null | undefined> {
+) : Promise<ApiResponse<EventData[]> | null | undefined> {
+    console.log("Fetching API getEvents from endpoint: ", endpoint)
     const accessToken = await getAccessToken();
-    
     const response = await fetch(`http://localhost:8080/api/events${endpoint}`, {
         method: "GET",
         headers: {
             "Content-Type": "application/json",
             "Authorization": `Bearer ${accessToken}`
         },
-    })
-
-    // Conditional when no upcoming
-    if (response.status == 204) {
-        return null
+    });
+    
+    if (response.status == 204) return null;
+    if (!response.ok) {
+        console.error(`Frontend fetch failed with status ${response.status}`);
+        return null; 
     }
-
-    const data = await response.json();
-    return data;
+    return await response.json();
 }
 
 export async function getEntitiesByEventId(
     eventId: number, 
-): Promise<ApiResponse | null | undefined> {
+): Promise<ApiResponse<EventData[]> | null | undefined> {
     const accessToken = await getAccessToken();
 
     const response = await fetch(`http://localhost:8080/api/entities?eventId=${eventId}`, {
@@ -52,12 +56,12 @@ export async function getEntitiesByEventId(
     return data;
 }
 
-
-
 export async function deleteEvents(id: number): Promise<void> {
     const response = fetch(`/api/events/${id}`, {
-        method: "DELETE"
+        method: "DELETE",
     })
+
+    console.log(response)
 
     if (!(await response).ok) {
         throw new Error(`Error to delete event, status: ${(await response).status}`)

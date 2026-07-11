@@ -1,5 +1,5 @@
-import { getEventEntityTagsData, getOnGoingEventData, getUpcomingEventData } from "@/service/api";
-import DashboardClient from "../../features/dashboard/DashboardClient";
+import { getEventEntityTagsData, getOnGoingEventData, getUpcomingEventData } from "@/lib/helper/api";
+import DashboardClient from "@/features/dashboard/DashboardClient";
 
 
 export default async function Dashboard() {
@@ -11,6 +11,9 @@ export default async function Dashboard() {
     }) || [];
 
     const resolvedTags = await Promise.all(tagPromises);
+
+    console.log("upcoming event data", upcomingEventData)
+    console.log("ongoing event data", onGoingEventData)
 
     return (
         <>
